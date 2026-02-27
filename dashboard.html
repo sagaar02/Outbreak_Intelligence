@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediGuard — AI Outbreak Intelligence</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --accent: #b0703c;
+            --accent-dark: #8a5a2f;
+            --accent-light: #d4a574;
+            --bg-cream: #faf6f1;
+            --bg-warm: #f3ece4;
+            --bg-card: #ffffff;
+            --text-dark: #2c2420;
+            --text-muted: #7a6e65;
+            --text-light: #a89b91;
+            --border-soft: #e8ddd3;
+            --shadow-warm: 0 8px 32px rgba(44, 36, 32, 0.08);
+            --shadow-hover: 0 12px 40px rgba(44, 36, 32, 0.12);
+            --transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-cream);
+            color: var(--text-dark);
+            min-height: 100vh;
+            padding-bottom: 60px;
+        }
+
+        /* ─── NAVBAR ─── */
+        .navbar {
+            background: var(--bg-cream);
+            border-bottom: 1px solid var(--border-soft);
+            padding: 18px 0;
+        }
+
+        .navbar-brand {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            font-size: 1.35rem;
+            color: var(--text-dark) !important;
+            letter-spacing: -0.3px;
+        }
+
+        .navbar-brand svg {
+            color: var(--accent);
+        }
+
+        .nav-top-link {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 8px 18px;
+            border: 1px solid var(--border-soft);
+            border-radius: 24px;
+            transition: var(--transition);
+        }
+
+        .nav-top-link:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* ─── HERO HEADER ─── */
+        .hero-header {
+            text-align: center;
+            padding: 50px 20px 30px;
+        }
+
+        .hero-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            line-height: 1.15;
+            margin-bottom: 12px;
+        }
+
+        .hero-header h1 .highlight {
+            color: var(--accent);
+        }
+
+        .hero-header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            max-width: 520px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* ─── TABS ─── */
+        .tab-nav {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 30px 0 40px;
+        }
+
+        .tab-nav .nav-link {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 500;
+            padding: 10px 28px;
+            border: 1.5px solid var(--border-soft) !important;
+            border-radius: 50px !important;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .tab-nav .nav-link:hover {
+            border-color: var(--accent-light) !important;
+            color: var(--accent-dark);
+        }
+
+        .tab-nav .nav-link.active {
+            background: var(--accent) !important;
+            border-color: var(--accent) !important;
+            color: #fff !important;
+            box-shadow: 0 4px 16px rgba(176, 112, 60, 0.25);
+        }
+
+        /* ─── CONTAINER ─── */
+        .dashboard-container {
+            max-width: 1060px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* ─── CARDS ─── */
+        .card {
+            border: 1px solid var(--border-soft);
+            border-radius: 18px;
+            background: var(--bg-card);
+            box-shadow: var(--shadow-warm);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-hover);
+        }
+
+        .form-card {
+            padding: 36px;
+        }
+
+        .result-card {
+            display: none;
+            padding: 36px;
+            margin-top: 24px;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ─── SECTION TITLE ─── */
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            font-size: 1.3rem;
+            color: var(--text-dark);
+            margin-bottom: 24px;
+            position: relative;
+            padding-bottom: 12px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        /* ─── FORM ─── */
+        .form-label {
+            font-weight: 500;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            border-radius: 12px;
+            padding: 13px 16px;
+            border: 1.5px solid var(--border-soft);
+            background: var(--bg-cream);
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            box-shadow: 0 0 0 4px rgba(176, 112, 60, 0.1);
+            border-color: var(--accent);
+            background: #fff;
+        }
+
+        .form-control::placeholder {
+            color: var(--text-light);
+        }
+
+        /* ─── BUTTONS ─── */
+        .btn-predict {
+            padding: 15px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 0.8px;
+            border-radius: 50px;
+            background: var(--accent);
+            border: none;
+            color: #fff;
+            transition: var(--transition);
+        }
+
+        .btn-predict:hover {
+            background: var(--accent-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(176, 112, 60, 0.3);
+            color: #fff;
+        }
+
+        /* ─── QUICK SCENARIOS ─── */
+        .scenario-card {
+            background: var(--bg-warm);
+            border: 1px solid var(--border-soft);
+            border-radius: 16px;
+            padding: 24px 28px;
+            margin-bottom: 28px;
+        }
+
+        .scenario-card h5 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            font-size: 1.05rem;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
+        .scenario-card .badge-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(176, 112, 60, 0.12);
+            color: var(--accent-dark);
+        }
+
+        .btn-scenario {
+            font-size: 0.82rem;
+            font-weight: 500;
+            padding: 8px 20px;
+            border-radius: 50px;
+            border: 1.5px solid var(--border-soft);
+            background: #fff;
+            color: var(--text-dark);
+            transition: var(--transition);
+        }
+
+        .btn-scenario:hover {
+            border-color: var(--accent);
+            color: var(--accent-dark);
+            background: rgba(176, 112, 60, 0.04);
+        }
+
+        .btn-scenario.sc-low:hover {
+            border-color: #4caf50;
+            color: #2e7d32;
+        }
+
+        .btn-scenario.sc-mid:hover {
+            border-color: #ff9800;
+            color: #e65100;
+        }
+
+        .btn-scenario.sc-high:hover {
+            border-color: #e53935;
+            color: #b71c1c;
+        }
+
+        /* ─── RISK BADGES ─── */
+        .risk-badge {
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            padding: 8px 22px;
+            border-radius: 50px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .risk-LOW {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .risk-MEDIUM {
+            background-color: #fff3e0;
+            color: #e65100;
+        }
+
+        .risk-HIGH {
+            background-color: #fce4ec;
+            color: #c62828;
+        }
+
+        .spinner-border {
+            display: none;
+            width: 1.4rem;
+            height: 1.4rem;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        /* ─── CHARTS ─── */
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        /* ─── ANALYTICS GRID ─── */
+        .analytics-grid {
+            display: grid;
+            gap: 24px;
+        }
+
+        .analytics-grid .half {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .analytics-grid .half {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        /* ─── FOOTER ─── */
+        .site-footer {
+            text-align: center;
+            padding: 40px 20px 20px;
+            color: var(--text-light);
+            font-size: 0.82rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="container d-flex justify-content-between align-items-center">
+            <span class="navbar-brand mb-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor"
+                    class="bi bi-shield-plus me-2" viewBox="0 0 16 16">
+                    <path
+                        d="M8 5.5a.5.5 0 0 1 .5.5v1.5H10a.5.5 0 0 1 0 1H8.5V10a.5.5 0 0 1-1 0V8.5H6a.5.5 0 0 1 0-1h1.5V6a.5.5 0 0 1 .5-.5z" />
+                    <path
+                        d="M8 0c-.69 0-1.843.265-2.928.56-1.11.3-2.229.655-2.887.87a1.54 1.54 0 0 0-1.044 1.262c-.596 4.477.787 7.795 2.465 9.99 1.679 2.196 3.703 3.516 4.141 3.79a1.456 1.456 0 0 0 1.496 0c.438-.274 2.462-1.594 4.141-3.79 1.678-2.195 3.061-5.513 2.465-9.99a1.541 1.541 0 0 0-1.044-1.263 62.467 62.467 0 0 0-2.887-.87C9.843.266 8.69 0 8 0zm0 1.415c.565 0 1.558.224 2.639.52.999.273 2.06.606 2.719.821a.541.541 0 0 1 .377.456c.457 3.429-.594 6.076-1.921 7.81-1.309 1.707-3.033 2.871-3.814 3.354a.458.458 0 0 1-.442 0c-.781-.483-2.505-1.647-3.814-3.354-1.327-1.734-2.378-4.381-1.921-7.81a.541.541 0 0 1 .377-.456c.659-.215 1.72-.548 2.719-.821 1.081-.296 2.074-.52 2.639-.52z" />
+                </svg>
+                MediGuard AI
+            </span>
+            <a href="#" class="nav-top-link">Dashboard</a>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <div class="hero-header">
+        <h1><span class="highlight">Outbreak</span><br>Intelligence</h1>
+        <p>Predict disease outbreaks and explore water quality, rainfall,
+            and health data — all from one place.</p>
+    </div>
+
+    <!-- TABS -->
+    <ul class="nav nav-pills tab-nav" id="dashboardTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="prediction-tab" data-bs-toggle="tab" data-bs-target="#predictionContent"
+                type="button" role="tab">Risk Prediction</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="analytics-tab" data-bs-toggle="tab" data-bs-target="#analyticsContent"
+                type="button" role="tab" onclick="loadAnalytics()">Data Insights</button>
+        </li>
+    </ul>
+
+    <!-- MAIN CONTENT -->
+    <div class="dashboard-container">
+        <div class="tab-content" id="dashboardTabContent">
+
+            <!-- ═══════════ PREDICTION TAB ═══════════ -->
+            <div class="tab-pane fade show active" id="predictionContent" role="tabpanel">
+
+                <!-- Quick Test Scenarios -->
+                <div class="scenario-card">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <h5 class="mb-0">Quick Test Scenarios</h5>
+                        <span class="badge-label">Verification</span>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="button" class="btn-scenario sc-low" onclick="fillScenario('LOW')">Low
+                            Risk</button>
+                        <button type="button" class="btn-scenario sc-mid" onclick="fillScenario('MEDIUM')">Medium
+                            Risk</button>
+                        <button type="button" class="btn-scenario sc-high" onclick="fillScenario('HIGH')">High
+                            Risk</button>
+                    </div>
+                </div>
+
+                <!-- Input Form -->
+                <div class="card form-card">
+                    <h3 class="section-title">Case Monitoring &amp; Environmental Data</h3>
+                    <form id="predictionForm" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="diarrhea_cases" class="form-label">Diarrhea Cases</label>
+                            <input type="number" class="form-control" id="diarrhea_cases" name="diarrhea_cases" required
+                                placeholder="0">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="fever_cases" class="form-label">Fever Cases</label>
+                            <input type="number" class="form-control" id="fever_cases" name="fever_cases" required
+                                placeholder="0">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="vomiting_cases" class="form-label">Vomiting Cases</label>
+                            <input type="number" class="form-control" id="vomiting_cases" name="vomiting_cases" required
+                                placeholder="0">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="temperature" class="form-label">Temperature (°C)</label>
+                            <input type="number" step="0.1" class="form-control" id="temperature" name="temperature"
+                                required placeholder="25.0">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="pH" class="form-label">Water pH</label>
+                            <input type="number" step="0.1" class="form-control" id="pH" name="pH" required
+                                placeholder="7.0">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="turbidity" class="form-label">Turbidity (NTU)</label>
+                            <input type="number" step="0.1" class="form-control" id="turbidity" name="turbidity"
+                                required placeholder="1.0">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="rainfall_mm" class="form-label">Rainfall (mm)</label>
+                            <input type="number" step="0.1" class="form-control" id="rainfall_mm" name="rainfall_mm"
+                                required placeholder="0.0">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="case_growth_rate" class="form-label">Case Growth Rate</label>
+                            <input type="number" step="0.01" class="form-control" id="case_growth_rate"
+                                name="case_growth_rate" required placeholder="0.05">
+                        </div>
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-predict w-100" id="submitBtn">
+                                <span class="spinner-border" role="status" aria-hidden="true"></span>
+                                Predict Outbreak Risk
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Result Section -->
+                <div id="resultCard" class="card result-card">
+                    <div class="text-center mb-4">
+                        <h4 style="color: var(--text-muted); font-family: 'Playfair Display', serif;">Prediction Result
+                        </h4>
+                        <div id="riskLevelBadge" class="risk-badge mt-2 d-inline-block">LOW RISK</div>
+                    </div>
+
+                    <div class="row text-center mt-3">
+                        <div class="col-md-6 border-end" style="border-color: var(--border-soft) !important;">
+                            <h2 id="outbreakProb" class="fw-bold mb-0" style="color: var(--accent);">--%</h2>
+                            <small
+                                style="color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; font-size: 0.75rem;">Outbreak
+                                Probability</small>
+                        </div>
+                        <div class="col-md-6">
+                            <h2 id="predictionVal" class="fw-bold mb-0" style="color: var(--text-dark);">--</h2>
+                            <small
+                                style="color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; font-size: 0.75rem;">Model
+                                Classification</small>
+                        </div>
+                    </div>
+
+                    <div id="riskAlert" class="alert mt-4 shadow-sm" role="alert" style="border-radius: 12px;">
+                        Please provide data to get a risk assessment.
+                    </div>
+                </div>
+
+                <div id="errorCard" class="alert alert-danger mt-3 d-none" role="alert" style="border-radius: 12px;">
+                    <strong>Error:</strong> <span id="errorMessage">Failed to fetch prediction. Please check if the
+                        backend server is running.</span>
+                </div>
+
+            </div> <!-- End Prediction Content -->
+
+            <!-- ═══════════ ANALYTICS TAB ═══════════ -->
+            <div class="tab-pane fade" id="analyticsContent" role="tabpanel">
+                <div class="analytics-grid">
+                    <!-- Row 1: Two half-width cards -->
+                    <div class="half">
+                        <div class="card p-4">
+                            <h5 class="section-title">Water Source Distribution</h5>
+                            <div class="chart-container">
+                                <canvas id="waterSourceChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="card p-4">
+                            <h5 class="section-title">Disease Distribution</h5>
+                            <div class="chart-container">
+                                <canvas id="diseaseChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Full width -->
+                    <div class="card p-4">
+                        <h5 class="section-title">Rainfall Patterns (Indian States)</h5>
+                        <div class="chart-container" style="height: 400px;">
+                            <canvas id="rainfallChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Full width -->
+                    <div class="card p-4">
+                        <h5 class="section-title">Water Quality Snapshot (pH &amp; BOD)</h5>
+                        <div class="chart-container" style="height: 400px;">
+                            <canvas id="qualityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="site-footer">
+        MediGuard AI &middot; Outbreak Intelligence Dashboard
+    </div>
+
+    <!-- ═══════════ ALL JAVASCRIPT (UNCHANGED LOGIC) ═══════════ -->
+    <script>
+        const form = document.getElementById('predictionForm');
+        const resultCard = document.getElementById('resultCard');
+        const errorCard = document.getElementById('errorCard');
+        const submitBtn = document.getElementById('submitBtn');
+        const spinner = submitBtn.querySelector('.spinner-border');
+
+        const SCENARIOS = {
+            'LOW': {
+                diarrhea_cases: 2, fever_cases: 5, vomiting_cases: 1, temperature: 24.5,
+                pH: 7.2, turbidity: 0.8, rainfall_mm: 5.0, case_growth_rate: -0.1
+            },
+            'MEDIUM': {
+                diarrhea_cases: 45, fever_cases: 35, vomiting_cases: 15, temperature: 32.0,
+                pH: 6.2, turbidity: 12.5, rainfall_mm: 150.0, case_growth_rate: 0.45
+            },
+            'HIGH': {
+                diarrhea_cases: 120, fever_cases: 85, vomiting_cases: 40, temperature: 38.5,
+                pH: 5.4, turbidity: 35.0, rainfall_mm: 480.0, case_growth_rate: 1.5
+            }
+        };
+
+        function fillScenario(level) {
+            const data = SCENARIOS[level];
+            for (const [key, value] of Object.entries(data)) {
+                const input = document.getElementById(key);
+                if (input) input.value = value;
+            }
+            // Auto-submit after filling
+            form.dispatchEvent(new Event('submit'));
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // UI Reset
+            resultCard.style.display = 'none';
+            errorCard.classList.add('d-none');
+            submitBtn.disabled = true;
+            spinner.style.display = 'inline-block';
+
+            // Collect Form Data
+            const formData = new FormData(form);
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = parseFloat(value);
+            });
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Server side error occurred');
+                }
+
+                const result = await response.json();
+                displayResults(result);
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('errorMessage').textContent = error.message;
+                errorCard.classList.remove('d-none');
+            } finally {
+                submitBtn.disabled = false;
+                spinner.style.display = 'none';
+            }
+        });
+
+        function displayResults(data) {
+            // Elements
+            const probEl = document.getElementById('outbreakProb');
+            const predEl = document.getElementById('predictionVal');
+            const riskBadge = document.getElementById('riskLevelBadge');
+            const alertEl = document.getElementById('riskAlert');
+
+            // Logic
+            const probability = (data.outbreak_probability * 100).toFixed(2) + '%';
+            const isOutbreak = data.prediction === 1 ? 'OUTBREAK WARNING' : 'NO OUTBREAK';
+
+            // Update UI
+            probEl.textContent = probability;
+            predEl.textContent = isOutbreak;
+            riskBadge.textContent = data.risk_level + ' RISK';
+
+            // Remove existing risk classes
+            riskBadge.classList.remove('risk-LOW', 'risk-MEDIUM', 'risk-HIGH');
+            riskBadge.classList.add('risk-' + data.risk_level);
+
+            // Update Alert
+            alertEl.classList.remove('alert-success', 'alert-warning', 'alert-danger');
+
+            if (data.risk_level === 'LOW') {
+                alertEl.classList.add('alert-success');
+                alertEl.innerHTML = '<strong>Safe!</strong> Current data suggests no immediate outbreak threat. Continue standard monitoring.';
+            } else if (data.risk_level === 'MEDIUM') {
+                alertEl.classList.add('alert-warning');
+                alertEl.innerHTML = '<strong>Watchful!</strong> Caution advised. Environmental or health indicators show abnormal patterns. Increase surveillance.';
+            } else {
+                alertEl.classList.add('alert-danger');
+                alertEl.innerHTML = '<strong>CRITICAL!</strong> High probability of an outbreak. Immediate public health intervention and resource mobilization recommended.';
+            }
+
+            // Show result card
+            resultCard.style.display = 'block';
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        // --- Analytics Logic ---
+        let charts = {};
+
+        async function loadAnalytics() {
+            try {
+                // 1. Water Sources Pie Chart
+                const sourceRes = await fetch('http://127.0.0.1:8000/api/v1/analytics/water-sources');
+                const sourceData = await sourceRes.json();
+                renderPieChart('waterSourceChart', sourceData.labels, sourceData.values, 'Water Sources');
+
+                // 2. Disease Bar Chart
+                const diseaseRes = await fetch('http://127.0.0.1:8000/api/v1/analytics/disease-stats');
+                const diseaseData = await diseaseRes.json();
+                renderBarChart('diseaseChart', diseaseData.labels, diseaseData.datasets);
+
+                // 3. Rainfall Line Chart
+                const rainRes = await fetch('http://127.0.0.1:8000/api/v1/analytics/rainfall-trends');
+                const rainData = await rainRes.json();
+                renderLineChart('rainfallChart', rainData.labels, rainData.values, 'Annual Rainfall (mm)');
+
+                // 4. Quality Multi-Axis Chart
+                const qualityRes = await fetch('http://127.0.0.1:8000/api/v1/analytics/water-quality');
+                const qualityData = await qualityRes.json();
+                renderQualityChart('qualityChart', qualityData);
+
+            } catch (error) {
+                console.error('Failed to load analytics:', error);
+            }
+        }
+
+        function renderPieChart(id, labels, values, title) {
+            if (charts[id]) charts[id].destroy();
+            charts[id] = new Chart(document.getElementById(id), {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: ['#b0703c', '#d4a574', '#8a5a2f', '#c98b5e', '#e8c9a8', '#6b4226', '#f0dac4']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function renderBarChart(id, labels, datasets) {
+            if (charts[id]) charts[id].destroy();
+            charts[id] = new Chart(document.getElementById(id), {
+                type: 'bar',
+                data: { labels: labels, datasets: datasets.map((ds, i) => ({ ...ds, backgroundColor: ['#b0703c', '#8a5a2f', '#d4a574'][i] })) },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Avg Cases per 100k' } } }
+                }
+            });
+        }
+
+        function renderLineChart(id, labels, values, title) {
+            if (charts[id]) charts[id].destroy();
+            charts[id] = new Chart(document.getElementById(id), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: title,
+                        data: values,
+                        borderColor: '#b0703c',
+                        backgroundColor: 'rgba(176, 112, 60, 0.08)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function renderQualityChart(id, data) {
+            if (charts[id]) charts[id].destroy();
+            charts[id] = new Chart(document.getElementById(id), {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [
+                        { label: 'Avg pH Level', data: data.ph_values, backgroundColor: 'rgba(138, 90, 47, 0.6)', yAxisID: 'y' },
+                        { label: 'Avg BOD (mg/L)', data: data.bod_values, backgroundColor: 'rgba(212, 165, 116, 0.6)', yAxisID: 'y1' }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        y: { type: 'linear', position: 'left', title: { display: true, text: 'pH' }, min: 0, max: 14 },
+                        y1: { type: 'linear', position: 'right', title: { display: true, text: 'BOD (mg/L)' }, grid: { drawOnChartArea: false } }
+                    }
+                }
+            });
+        }
+    </script>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
